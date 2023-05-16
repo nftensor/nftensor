@@ -1,0 +1,14 @@
+# directories
+cache
+out
+
+# files
+*.env
+*.log
+.DS_Store
+
+
+# broadcasts
+!broadcast
+broadcast/*
+broadcast/*/31337/
