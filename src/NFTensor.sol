@@ -23,12 +23,26 @@ contract NFTensor is ERC721, Owned {
     /// @notice The minimum amount of wTAO required to mint an NFT.
     uint256 constant MINT_PRICE = 1e9;
 
-    /// @ notice The maximum supply of NFTs that can be minted.
+    /// @notice The maximum supply of NFTs that can be minted.
     uint256 constant MAX_SUPPLY = 500;
+
+    /// @notice The length of time during which minting is possible.
+    uint256 constant MINT_LENGTH = 5 days;
+
+    /*//////////////////////////////////////////////////////////////
+                               ERRORS
+    //////////////////////////////////////////////////////////////*/
+
+    error MintingPeriodOver();
+
+    error AllNFTsMinted();
 
     /*//////////////////////////////////////////////////////////////
                                STATE VARIABLES
     //////////////////////////////////////////////////////////////*/
+
+    /// @notice Blocktimestamp during construction that signals start of minting period._tokenID
+    uint256 immutable mintStart;
 
     /// @notice The tokenID for the next token to be minted.
     uint256 public tokenID;
@@ -36,10 +50,24 @@ contract NFTensor is ERC721, Owned {
     /// @notice The mapping of tokenID to query.
     mapping(uint256 => string) public queries;
 
-    constructor() ERC721("NFTensor", "NFTENSOR") Owned(OWNER_ADDRESS) { }
+    constructor() ERC721("NFTensor", "NFTENSOR") Owned(OWNER_ADDRESS) {
+        mintStart = block.timestamp;
+    }
 
     /// @notice Mints a token to the sender.
-    function mint() external { }
+    function mint(string calldata query) external {
+        if (block.timestamp > mintStart + MINT_LENGTH) {
+            revert MintingPeriodOver();
+        }
+        if (tokenID > MAX_SUPPLY) {
+            revert AllNFTsMinted();
+        }
+        // make sure you are handling this correctly
+        require(ERC20(WTAO_ADDRESS).transferFrom(msg.sender, address(this), MINT_PRICE));
+
+        _safeMint(msg.sender, ++tokenID);
+        queries[tokenID] = query;
+    }
 
     /*//////////////////////////////////////////////////////////////
                                METADATA
@@ -52,4 +80,17 @@ contract NFTensor is ERC721, Owned {
     function tokenURI(uint256 _tokenID) public view virtual override returns (string memory) {
         return "temp string";
     }
+
+    /*//////////////////////////////////////////////////////////////
+                               ADMIN
+    //////////////////////////////////////////////////////////////*/
+
+    function withdrawWTAO() external onlyOwner {
+        require(ERC20(WTAO_ADDRESS).transfer(msg.sender, ERC20(WTAO_ADDRESS).balanceOf(address(this))));
+    }
+
+    // function withdrawLink() external onlyOwner {
+    //     LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
+    //     require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
+    // }
 }
