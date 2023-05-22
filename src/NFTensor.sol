@@ -59,14 +59,13 @@ contract NFTensor is ERC721, Owned {
         if (block.timestamp > mintStart + MINT_LENGTH) {
             revert MintingPeriodOver();
         }
-        if (tokenID > MAX_SUPPLY) {
+        if (tokenID + 1 > MAX_SUPPLY) {
             revert AllNFTsMinted();
         }
         // make sure you are handling this correctly
         require(ERC20(WTAO_ADDRESS).transferFrom(msg.sender, address(this), MINT_PRICE));
 
         _safeMint(msg.sender, ++tokenID);
-        queries[tokenID] = query;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -88,9 +87,4 @@ contract NFTensor is ERC721, Owned {
     function withdrawWTAO() external onlyOwner {
         require(ERC20(WTAO_ADDRESS).transfer(msg.sender, ERC20(WTAO_ADDRESS).balanceOf(address(this))));
     }
-
-    // function withdrawLink() external onlyOwner {
-    //     LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
-    //     require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
-    // }
 }
