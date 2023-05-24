@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.19;
 
-import "solmate/tokens/ERC721.sol";
-import "solmate/tokens/ERC20.sol";
-import "solmate/auth/Owned.sol";
+import { ERC721 } from "solmate/tokens/ERC721.sol";
+import { ERC20 } from "solmate/tokens/ERC20.sol";
+import { Owned } from "solmate/auth/Owned.sol";
+import { Strings } from "openzeppelin-contracts/contracts/utils/Strings.sol";
 
 /// @title NFTensor
 /// @author 0xcacti
@@ -42,16 +43,19 @@ contract NFTensor is ERC721, Owned {
     //////////////////////////////////////////////////////////////*/
 
     /// @notice Blocktimestamp during construction that signals start of minting period._tokenID
-    uint256 immutable mintStart;
+    uint256 immutable MINT_START;
 
     /// @notice The tokenID for the next token to be minted.
     uint256 public tokenID;
+
+    /// @notice The baseURI for the contract.
+    string public baseURI;
 
     /// @notice The mapping of tokenID to query.
     mapping(uint256 => string) public queries;
 
     constructor() ERC721("NFTensor", "NFTENSOR") Owned(OWNER_ADDRESS) {
-        mintStart = block.timestamp;
+        MINT_START = block.timestamp;
     }
 
     /// @notice Mints a token to the sender.
@@ -77,7 +81,11 @@ contract NFTensor is ERC721, Owned {
     /// @param _tokenID the tokenID for which to retrieve metadata
     /// @return the tokenURI for the contract
     function tokenURI(uint256 _tokenID) public view virtual override returns (string memory) {
-        return "temp string";
+        return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, _tokenID.toString())) : "";
+    }
+
+    function setBaseURI(string memory _baseURI) external onlyOwner {
+        baseURI = _baseURI;
     }
 
     /*//////////////////////////////////////////////////////////////
