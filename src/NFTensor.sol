@@ -4,13 +4,14 @@ pragma solidity ^0.8.19;
 import { ERC721 } from "solmate/tokens/ERC721.sol";
 import { ERC20 } from "solmate/tokens/ERC20.sol";
 import { Owned } from "solmate/auth/Owned.sol";
-import { Strings } from "openzeppelin-contracts/contracts/utils/Strings.sol";
+import { LibString } from "solmate/utils/LibString.sol";
 
 /// @title NFTensor
 /// @author 0xcacti
 /// @notice Below is the contract for handling saving queries from which to create NFTs using the response from the
 /// Bittensor network
 contract NFTensor is ERC721, Owned {
+    using LibString for uint256;
     /*//////////////////////////////////////////////////////////////
                                CONSTANTS
     //////////////////////////////////////////////////////////////*/
@@ -59,8 +60,10 @@ contract NFTensor is ERC721, Owned {
     }
 
     /// @notice Mints a token to the sender.
+    /// @dev Only callable during the minting period. User must approve the contract to spend their wTAO.
+    /// @param query The query to save for the token.
     function mint(string calldata query) external {
-        if (block.timestamp > mintStart + MINT_LENGTH) {
+        if (block.timestamp > MINT_START + MINT_LENGTH) {
             revert MintingPeriodOver();
         }
         if (tokenID + 1 > MAX_SUPPLY) {
@@ -68,6 +71,8 @@ contract NFTensor is ERC721, Owned {
         }
         // make sure you are handling this correctly
         require(ERC20(WTAO_ADDRESS).transferFrom(msg.sender, address(this), MINT_PRICE));
+
+        queries[tokenID] = query;
 
         _safeMint(msg.sender, ++tokenID);
     }
@@ -77,13 +82,16 @@ contract NFTensor is ERC721, Owned {
     //////////////////////////////////////////////////////////////*/
 
     /// @notice get the baseURI for the contract
-    /// @dev return metadata if baseURI is not previously set
+    /// @dev return empty string if the baseURI is not previously set
     /// @param _tokenID the tokenID for which to retrieve metadata
     /// @return the tokenURI for the contract
     function tokenURI(uint256 _tokenID) public view virtual override returns (string memory) {
         return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, _tokenID.toString())) : "";
     }
 
+    /// @notice set the baseURI for the contract
+    /// @dev only callable by owner
+    /// @param _baseURI the baseURI to set
     function setBaseURI(string memory _baseURI) external onlyOwner {
         baseURI = _baseURI;
     }
