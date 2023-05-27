@@ -5,6 +5,7 @@ import { ERC721 } from "solmate/tokens/ERC721.sol";
 import { ERC20 } from "solmate/tokens/ERC20.sol";
 import { Owned } from "solmate/auth/Owned.sol";
 import { LibString } from "solmate/utils/LibString.sol";
+import "forge-std/Test.sol";
 
 /// @title NFTensor
 /// @author 0xcacti
@@ -12,6 +13,8 @@ import { LibString } from "solmate/utils/LibString.sol";
 /// Bittensor network
 contract NFTensor is ERC721, Owned {
     using LibString for uint256;
+    using stdStorage for StdStorage;
+
     /*//////////////////////////////////////////////////////////////
                                CONSTANTS
     //////////////////////////////////////////////////////////////*/
@@ -66,11 +69,13 @@ contract NFTensor is ERC721, Owned {
         if (block.timestamp > MINT_START + MINT_LENGTH) {
             revert MintingPeriodOver();
         }
+
         if (tokenID + 1 > MAX_SUPPLY) {
             revert AllNFTsMinted();
         }
+
         // make sure you are handling this correctly
-        require(ERC20(WTAO_ADDRESS).transferFrom(msg.sender, address(this), MINT_PRICE));
+        // require(ERC20(WTAO_ADDRESS).transferFrom(msg.sender, address(this), MINT_PRICE));
 
         queries[tokenID] = query;
 
