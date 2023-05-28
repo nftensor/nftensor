@@ -75,7 +75,7 @@ contract NFTensor is ERC721, Owned {
         }
 
         // make sure you are handling this correctly
-        // require(ERC20(WTAO_ADDRESS).transferFrom(msg.sender, address(this), MINT_PRICE));
+        require(ERC20(WTAO_ADDRESS).transferFrom(msg.sender, address(this), MINT_PRICE));
 
         queries[tokenID] = query;
 
