@@ -23,24 +23,30 @@ contract TestContract is Test {
         wtao = wTAO(wtaoAddress);
     }
 
+    // check storage to tokenID is proper
     function testQueriesAreStoredCorrectly(string memory query) public {
-        vm.prank(minter);
+        getTAO(minter, MINT_PRICE);
+        vm.startPrank(minter);
+        wtao.approve(address(nft), MINT_PRICE);
         nft.mint(query);
-        uint256 tokenId = nft.tokenID();
-        string memory queryFromContract = nft.queries(tokenId);
+        uint256 tokenID = nft.tokenID();
+        string memory queryFromContract = nft.queries(tokenID);
         assertEq(query, queryFromContract);
     }
 
     // see gas snapshot
     function testRandomMintStringsForGas(string memory query) public {
-        getTAO(address(this), MINT_PRICE);
-        vm.prank(minter);
+        getTAO(minter, MINT_PRICE);
+        vm.startPrank(minter);
+        wtao.approve(address(nft), MINT_PRICE);
         nft.mint(query);
     }
 
     function testSpecifiedMintStringsForGas() public {
-        getTAO(address(this), MINT_PRICE * 4);
+        getTAO(minter, MINT_PRICE * 4);
         vm.startPrank(minter);
+        wtao.approve(address(nft), MINT_PRICE * 4);
+
         string memory queryOne = "What is the capital of France?";
         nft.mint(queryOne);
 
@@ -49,7 +55,6 @@ contract TestContract is Test {
 
         string memory queryThree =
             "Liguistically, what would frege call the sense and reference of the terms hesperus and phosphorus?";
-
         nft.mint(queryThree);
 
         string memory queryFour = "Please explain the twin prime conjecture as childishly as possible.";
@@ -67,8 +72,10 @@ contract TestContract is Test {
     // test minting is impossible after all NFTs are minted
     function testAllNFTsMinted() public {
         getTAO(minter, MINT_PRICE * 501);
+
         vm.startPrank(minter);
         for (uint256 i = 0; i < 500; i++) {
+            wtao.approve(address(nft), MINT_PRICE);
             nft.mint("What is the capital of France?");
         }
         vm.expectRevert(NFTensor.AllNFTsMinted.selector);
@@ -87,7 +94,6 @@ contract TestContract is Test {
         vm.startPrank(minter);
         assertEq(wtao.balanceOf(minter), MINT_PRICE);
         wtao.approve(address(nft), MINT_PRICE);
-        console2.log(wtao.balanceOf(minter));
         nft.mint("what is the capital of France?");
         assertEq(wtao.balanceOf(minter), 0);
         assertEq(wtao.balanceOf(address(nft)), MINT_PRICE);
@@ -98,8 +104,8 @@ contract TestContract is Test {
         string memory uri = nft.baseURI();
         assertEq(uri, "");
         vm.prank(owner);
-        nft.setBaseURI("https://nftensor.io/api/");
-        assertEq(nft.baseURI(), "https://nftensor.io/api/");
+        nft.setBaseURI("https://nftensor.com/api/");
+        assertEq(nft.baseURI(), "https://nftensor.com/api/");
     }
 
     // test that the tokenURI is set correcty
@@ -107,9 +113,9 @@ contract TestContract is Test {
         string memory uri = nft.baseURI();
         assertEq(uri, "");
         vm.prank(owner);
-        nft.setBaseURI("https://nftensor.io/api/");
+        nft.setBaseURI("https://nftensor.com/api/");
         nft.tokenURI(1);
-        assertEq(nft.tokenURI(1), "https://nftensor.io/api/1");
+        assertEq(nft.tokenURI(1), "https://nftensor.com/api/1");
     }
 
     // test that the owner can withdraw wTAO
