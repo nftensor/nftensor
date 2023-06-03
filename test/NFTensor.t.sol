@@ -162,4 +162,11 @@ contract TestContract is Test {
         vm.prank(wtaoBridgeAddress);
         wtao.bridgedTo(_froms, _tos, _amounts);
     }
+
+    // test the owner can revoke ownership
+    function testRevokeOwnership() public {
+        vm.prank(owner);
+        nft.transferOwnership(address(0));
+        assertEq(nft.owner(), address(0));
+    }
 }
