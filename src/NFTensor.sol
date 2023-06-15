@@ -49,7 +49,7 @@ contract NFTensor is ERC721, Owned {
     /// @notice Blocktimestamp during construction that signals start of minting period._tokenID
     uint256 immutable MINT_START;
 
-    /// @notice The tokenID for the next token to be minted.
+    /// @notice The tokenID of the last token to be minted.
     uint256 public tokenID;
 
     /// @notice The baseURI for the contract.
