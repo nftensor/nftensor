@@ -42,6 +42,8 @@ contract NFTensor is ERC721, Owned {
 
     error AllNFTsMinted();
 
+    error RejectEmptyString();
+
     /*//////////////////////////////////////////////////////////////
                                STATE VARIABLES
     //////////////////////////////////////////////////////////////*/
@@ -58,20 +60,32 @@ contract NFTensor is ERC721, Owned {
     /// @notice The mapping of tokenID to query.
     mapping(uint256 => string) public queries;
 
+    /*//////////////////////////////////////////////////////////////
+                               constructor
+    //////////////////////////////////////////////////////////////*/
+
     constructor() ERC721("NFTensor", "NFTENSOR") Owned(OWNER_ADDRESS) {
         MINT_START = block.timestamp;
     }
+
+    /*//////////////////////////////////////////////////////////////
+                               MINTING
+    //////////////////////////////////////////////////////////////*/
 
     /// @notice Mints a token to the sender.
     /// @dev Only callable during the minting period. User must approve the contract to spend their wTAO.
     /// @param query The query to save for the token.
     function mint(string calldata query) external {
-        if (block.timestamp > MINT_START + MINT_LENGTH) {
+        if (isMintingPeriodOver()) {
             revert MintingPeriodOver();
         }
 
         if (tokenID + 1 > MAX_SUPPLY) {
             revert AllNFTsMinted();
+        }
+
+        if (bytes(query).length == 0) {
+            revert RejectEmptyString();
         }
 
         // make sure you are handling this correctly
@@ -81,6 +95,10 @@ contract NFTensor is ERC721, Owned {
         queries[tokenID] = query;
 
         _safeMint(msg.sender, tokenID);
+    }
+
+    function isMintingPeriodOver() public view returns (bool) {
+        return block.timestamp > MINT_START + MINT_LENGTH;
     }
 
     /*//////////////////////////////////////////////////////////////

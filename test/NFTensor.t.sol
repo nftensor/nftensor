@@ -25,6 +25,9 @@ contract TestContract is Test {
 
     // check storage to tokenID is proper
     function testQueriesAreStoredCorrectly(string memory query) public {
+        if (bytes(query).length == 0) {
+            return;
+        }
         getTAO(minter, MINT_PRICE);
         vm.startPrank(minter);
         wtao.approve(address(nft), MINT_PRICE);
@@ -36,12 +39,16 @@ contract TestContract is Test {
 
     // see gas snapshot
     function testRandomMintStringsForGas(string memory query) public {
+        if (bytes(query).length == 0) {
+            return;
+        }
         getTAO(minter, MINT_PRICE);
         vm.startPrank(minter);
         wtao.approve(address(nft), MINT_PRICE);
         nft.mint(query);
     }
 
+    // test various strings for more calls to gas
     function testSpecifiedMintStringsForGas() public {
         getTAO(minter, MINT_PRICE * 4);
         vm.startPrank(minter);
@@ -142,6 +149,7 @@ contract TestContract is Test {
         nft.mint("what is the capital of France?");
     }
 
+    // check allowances
     function testMintRequiresSufficientAllowance() public {
         getTAO(minter, MINT_PRICE);
         vm.startPrank(minter);
@@ -168,5 +176,14 @@ contract TestContract is Test {
         vm.prank(owner);
         nft.transferOwnership(address(0));
         assertEq(nft.owner(), address(0));
+    }
+
+    // test "" rejected
+    function testEmptyStringRejected() public {
+        getTAO(minter, MINT_PRICE);
+        vm.startPrank(minter);
+        wtao.approve(address(nft), MINT_PRICE);
+        vm.expectRevert(NFTensor.RejectEmptyString.selector);
+        nft.mint("");
     }
 }
