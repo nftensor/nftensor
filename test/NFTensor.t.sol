@@ -71,7 +71,7 @@ contract TestContract is Test {
     // test minting is impossible after the minting period ends
     function testMintingPeriodOver() public {
         vm.startPrank(minter);
-        vm.warp(block.timestamp + 6 days);
+        vm.warp(block.timestamp + 11 days);
         vm.expectRevert(NFTensor.MintingPeriodOver.selector);
         nft.mint("What is the capital of France?");
     }

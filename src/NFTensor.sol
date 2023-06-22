@@ -32,7 +32,7 @@ contract NFTensor is ERC721, Owned {
     uint256 constant MAX_SUPPLY = 500;
 
     /// @notice The length of time during which minting is possible.
-    uint256 constant MINT_LENGTH = 5 days;
+    uint256 constant MINT_LENGTH = 10 days;
 
     /*//////////////////////////////////////////////////////////////
                                ERRORS
